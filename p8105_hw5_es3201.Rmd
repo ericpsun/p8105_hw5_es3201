@@ -121,4 +121,52 @@ path_df %>%
   geom_line(size = 1, alpha = .5) +
   facet_grid(. ~ arm)
 ```
+The exposed group has higher observations that rise over the weeks compared to the control group that has observations that stay relatively constant over the 8 weeks.
+
+# Problem 3
+Create a function to generate datasets
+```{r}
+
+sample_fn = function(n, mean, sd){
+  samp_data = tibble(
+    samp = rnorm(n, mean, sd)
+  )
+  
+  samp_result = samp_data %>%
+    nest() %>%
+   mutate(
+    t_test = map(.x = samp_data, ~t.test(x = .x,mu=0, alternative = 'two.sided', paired = FALSE, conf.level = 0.95))
+  ) %>%
+    mutate(tidy_t_test = map(.x = t_test, ~broom::tidy(.x))) %>%
+    select(-t_test) %>%
+    unnest(tidy_t_test) %>%
+    select(estimate, p.value)
+  
+  
+  return(samp_result)
+}
+```
+
+Test function
+```{r}
+sim_results = rerun(5, sample_fn(30,0,5)) %>%
+  bind_rows()
+```
+
+Repeat function for other mu and generating for multiple mu
+```{r}
+dataset_fn = function(mu) {
+  dataset_df = rerun(5, sample_fn(n=30, mean=mu, sd= 5)) %>% 
+    bind_rows %>%
+    mutate(mu = mu)
+  
+  return(dataset_df)
+}
+
+mu_df = tibble(mu = c(1:6))
+
+dataset_results = tibble(
+  data = map(.x = mu_df, ~dataset_fn(mu = .x))
+)
+```
 
