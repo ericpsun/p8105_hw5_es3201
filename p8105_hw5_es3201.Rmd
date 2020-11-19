@@ -156,31 +156,31 @@ sim_results = rerun(5, sample_fn(30,0,5)) %>%
 
 Generate datasets for different mu and combine into final power dataset
 ```{r}
-mu_0 = rerun(5, sample_fn(30,0,5)) %>%
+mu_0 = rerun(5000, sample_fn(30,0,5)) %>%
   bind_rows() %>%
   mutate(mu = 0)
 
-mu_1 = rerun(5, sample_fn(30,1,5)) %>%
+mu_1 = rerun(5000, sample_fn(30,1,5)) %>%
   bind_rows() %>%
   mutate(mu = 1)
 
-mu_2 = rerun(5, sample_fn(30,2,5)) %>%
+mu_2 = rerun(5000, sample_fn(30,2,5)) %>%
   bind_rows() %>%
   mutate(mu = 2)
 
-mu_3 = rerun(5, sample_fn(30,3,5)) %>%
+mu_3 = rerun(5000, sample_fn(30,3,5)) %>%
   bind_rows() %>%
   mutate(mu = 3)
 
-mu_4 = rerun(5, sample_fn(30,4,5)) %>%
+mu_4 = rerun(5000, sample_fn(30,4,5)) %>%
   bind_rows() %>%
   mutate(mu = 4)
 
-mu_5 = rerun(5, sample_fn(30,5,5)) %>%
+mu_5 = rerun(5000, sample_fn(30,5,5)) %>%
   bind_rows() %>%
   mutate(mu = 5)
 
-mu_6 = rerun(5, sample_fn(30,6,5)) %>%
+mu_6 = rerun(5000, sample_fn(30,6,5)) %>%
   bind_rows() %>%
   mutate(mu = 6)
 
