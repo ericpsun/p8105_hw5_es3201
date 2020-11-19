@@ -150,23 +150,81 @@ sample_fn = function(n, mean, sd){
 Test function
 ```{r}
 sim_results = rerun(5, sample_fn(30,0,5)) %>%
-  bind_rows()
+  bind_rows() %>%
+  mutate(mu = 0)
 ```
 
-Repeat function for other mu and generating for multiple mu
+Generate datasets for different mu and combine into final power dataset
 ```{r}
-dataset_fn = function(mu) {
-  dataset_df = rerun(5, sample_fn(n=30, mean=mu, sd= 5)) %>% 
-    bind_rows %>%
-    mutate(mu = mu)
-  
-  return(dataset_df)
-}
+mu_0 = rerun(5, sample_fn(30,0,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 0)
 
-mu_df = tibble(mu = c(1:6))
+mu_1 = rerun(5, sample_fn(30,1,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 1)
 
-dataset_results = tibble(
-  data = map(.x = mu_df, ~dataset_fn(mu = .x))
-)
+mu_2 = rerun(5, sample_fn(30,2,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 2)
+
+mu_3 = rerun(5, sample_fn(30,3,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 3)
+
+mu_4 = rerun(5, sample_fn(30,4,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 4)
+
+mu_5 = rerun(5, sample_fn(30,5,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 5)
+
+mu_6 = rerun(5, sample_fn(30,6,5)) %>%
+  bind_rows() %>%
+  mutate(mu = 6)
+
+power_df = bind_rows(mu_0, mu_1, mu_2, mu_3, mu_4, mu_5, mu_6)
+
 ```
 
+Make plot of proportion of times null was rejected
+```{r}
+power_df %>%
+  mutate(reject = if_else(p.value<=.05, TRUE, FALSE)) %>%
+  group_by(mu) %>%
+  summarize(
+    proportion = sum(reject=="TRUE")/n()
+  ) %>%
+  ggplot(aes(x = mu, y = proportion)) +
+  geom_col()
+```
+The higher the mu^, the higher the rejection rate.
+
+
+Make plot of average estimate of mu vs true value of mu
+```{r}
+library(patchwork)
+
+all_means = power_df %>%
+  group_by(mu) %>%
+  summarize(
+    mean = mean(estimate)
+  ) %>%
+  ggplot(aes(x = mu, y = mean)) +
+  geom_col()
+
+rejected_mean = power_df %>%
+  mutate(reject = if_else(p.value<=.05, TRUE, FALSE)) %>%
+  filter(reject=="TRUE") %>%
+  group_by(mu) %>%
+  summarize(
+    mean = mean(estimate)
+  ) %>%
+  ggplot(aes(x = mu, y = mean)) +
+  geom_col()
+
+all_means + rejected_mean
+```
+
+The sample average in the rejected null group is approximately equal for the higher mu, but are larger for the smaller mu. This is because the null is rejected as the average deviates from the test of mu=0 so it would have to be higher among the lower mu groups.
